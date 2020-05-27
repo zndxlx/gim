@@ -1,0 +1,45 @@
+syntax = "proto3";
+import "message.proto";
+package pb;
+
+
+enum CMD {
+    CMD_HEART_BEATE = 0; 
+    CMD_HEART_BEATE_REPLAY  = 1;
+    CMD_AUTH = 2;
+    CMD_AUTH_REPLAY = 3;
+    CMD_SYNC_MSG       = 17;    //同步消息
+    CMD_SYNC_MSG_REPLY = 18;    //同步消息响应
+    CMD_ACK_MSG        = 19;   //客户端确认收到消息
+    CMD_MSG_NOTIFY     = 20;   //通知有新的消息
+    
+    CMD_RAW_MSG    = 20;    //透传消息通知，不需要ack, 不可靠
+}
+
+message Empty
+{
+}
+
+message AuthReq {
+    string token = 1; // 登陆时候，应用服务器返回的token
+    string user_id = 2;   //账号
+}
+
+message AuthRsp {
+    string  last_msg_id = 1;      // 最新的消息ID
+    string  last_ack_msg_id = 1;  // 最后确认的消息id
+}
+
+message SyncMsgReq {
+    string seq = 1; // 客户端已经同步的序列号
+}
+
+message SyncMsgRsp {
+    repeated MessageItem messages = 1; // 消息列表
+}
+
+
+message ACK_MSG
+{
+    repeated string msg_ids;  //确认的消息列表
+}
