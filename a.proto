@@ -38,7 +38,6 @@ message SyncMsgRsp {
     repeated MessageItem messages = 1; // 消息列表
 }
 
-
 message ACK_MSG
 {
     repeated string msg_ids;  //确认的消息列表
