@@ -64,7 +64,7 @@ func (c *Connection) StartWriter() {
 				fmt.Println("Send Data error:, ", err, " Conn Writer exit")
 				return
 			}
-			//fmt.Printf("Send data succ! data = %+v\n", data)
+			fmt.Printf("Send data succ! len(data) = %+v\n", len(data))
 		case data, ok := <-c.msgBuffChan:
 			if ok {
 				//有数据要写给客户端

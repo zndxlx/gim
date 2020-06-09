@@ -33,7 +33,7 @@ func NewServer() *Server {
 	s := &Server{
 		Name:       "testServer",
 		IPVersion:  "tcp4",
-		IP:         "127.0.0.1",
+		IP:         "0.0.0.0",
 		Port:       8081,
 		ConnMgr:    NewConnManager(),
 	}

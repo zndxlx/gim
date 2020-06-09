@@ -42,7 +42,7 @@ func  (topic *TopicJoiners)LeftTopic(conn *znet.Connection){
 }
 
 func  (topic *TopicJoiners)PushMessage(topicName string, content string, from string, conn *znet.Connection) {
-    conns := (*topic)[topicName]
+    connections := (*topic)[topicName]
     
     msg := &proto.MessagePush{
         Content:pb.String(content),
@@ -50,11 +50,11 @@ func  (topic *TopicJoiners)PushMessage(topicName string, content string, from st
         Topic: pb.String(topicName),
     }
     
-    for c,_ := range conns {
+    for c,_ := range connections {
         if c == conn {
             continue
         }
-        util.SendPbMsg(c,  int32(proto.CmdID_CMD_ID_SEND_MESSAGE),0, msg)
+        util.SendPbMsg(c,  10001,0, msg)
     }
 
 

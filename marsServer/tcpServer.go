@@ -7,6 +7,7 @@ import (
     // "context"
     "marsServer/proto"
     "marsServer/util"
+    pb "github.com/golang/protobuf/proto"
 )
 var gTcpServer *znet.Server
 
@@ -16,7 +17,8 @@ type handler struct{}
 var Handler = new(handler)
 
 func (*handler) OnConnect(c *znet.Connection) {
-    log.Printf("new connet c %v", c)
+    log.Printf("new connet c %v", c.ConnID)
+    topicJoiners.JoinTopic(c);
 }
 
 func (h *handler) OnMessage(c *znet.Connection, msg *znet.Message) {
@@ -24,34 +26,46 @@ func (h *handler) OnMessage(c *znet.Connection, msg *znet.Message) {
     
     switch msg.Cmd {
     case int32(proto.CmdID_CMD_ID_HELLO):
+        log.Printf("recv hello req")
         _, rspBody, err := util.HttpPost("http://127.0.0.1:8080/mars/hello", string(msg.Data))
         if err != nil {
+            log.Printf("hello err=%v", err)
             return
         }
         c.SendMsg(msg.Cmd, msg.Seq, rspBody)
-        log.Printf("recv hello req")
+        
     case int32(proto.CmdID_CMD_ID_HELLO2):
+        log.Printf("recv hello req2")
         _, rspBody, err := util.HttpPost("http://127.0.0.1:8080/mars/hello2", string(msg.Data))
         if err != nil {
             return
         }
         c.SendMsg(msg.Cmd, msg.Seq, rspBody)
-        log.Printf("recv hello req2")
+        
         
     case int32(proto.CmdID_CMD_ID_SEND_MESSAGE):
+        log.Printf("recv send msg")
         _, rspBody, err := util.HttpPost("http://127.0.0.1:8080/mars/sendmessage", string(msg.Data))
         if err != nil {
             return
         }
+        rsp := &proto.SendMessageResponse{}
+        pb.Unmarshal(rspBody, rsp)
+        topicJoiners.PushMessage(rsp.GetTopic(), rsp.GetText(), rsp.GetFrom(), c)
         c.SendMsg(msg.Cmd, msg.Seq, rspBody)
-        log.Printf("recv send msg")
+        
+    case  6:
+        c.SendMsg(msg.Cmd, msg.Seq, msg.Data)
     }
+    
+    
     
     return
 }
 
 func (*handler) OnClose(c *znet.Connection) {
-    log.Printf("connect close, c=%v", c)
+    log.Printf("connect close, c=%v", c.ConnID)
+    topicJoiners.LeftTopic(c);
 }
 
 
