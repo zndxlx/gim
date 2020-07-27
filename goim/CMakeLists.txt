@@ -24,7 +24,7 @@ add_subdirectory(libevent libevent)
 
 add_subdirectory(evpp evpp)
 
-add_executable(${PROJECT_NAME} main.cc GConnection.cc)
+add_executable(${PROJECT_NAME} main.cc GConnection.cc message.cc command.cc)
 
 
 #指定库路径

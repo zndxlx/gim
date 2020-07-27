@@ -9,6 +9,9 @@
 #include <evpp/buffer.h>
 #include <evpp/tcp_conn.h>
 #include <evpp/tcp_client.h>
+#include "message.h"
+#include <list>
+#include <command.h>
 
 namespace evpp {
     class EventLoop;
@@ -23,7 +26,7 @@ namespace goim{
             kDisconnected = 0,
             kConnecting = 1,
             kAuthenticating = 2,
-            kConnected = 3,
+            kReady = 3,
             kDisconnecting = 4,
         };
         struct Option {
@@ -38,13 +41,16 @@ namespace goim{
         ~GConnection();
         void Connect();
         void Close();
+        //send command
+        void SendAck(const std::vector<std::string> &msgIDs);
+
         const char *StatusToString() const;
 
         Status status() const {
             return status_;
         }
-        bool IsConnected() const {
-            return status_ == kConnected;
+        bool IsReady() const {
+            return status_ == kReady;
         }
         bool IsConnecting() const {
             return status_ == kConnecting;
@@ -62,11 +68,25 @@ namespace goim{
         void OnTCPConnectionEvent(const evpp::TCPConnPtr& conn);
         void OnRecv(const evpp::TCPConnPtr& conn, evpp::Buffer* buf);
         void Authenticate();
+        void WriteMessage(const Message& m);
+        void PushRunningCommand(CommandPtr& cmd);
+        void OnPacketTimeout(int32_t cmd_id);
+        void SendSync(const std::string& msgId);
+        //CommandPtr PopRunningCommand();
+        void LaunchCommand(CommandPtr& command);
+        void OnSyncRsp(uint32_t seq, int code, SyncRsp &rsp);
+        void ProcessCmdRsp(Message &msg);
+        //CommandPtr FindCommand();
     private:
         Option option_;
         Status status_;
         evpp::EventLoop* loop_;
         evpp::TCPClientPtr tcp_client_;
+        std::list<CommandPtr> running_command_;
+        evpp::InvokeTimerPtr cmd_timer_;
+        bool  timer_canceled_;
+        std::string lastAck_;
+        std::string lastMsg_;
     };
 }
 
